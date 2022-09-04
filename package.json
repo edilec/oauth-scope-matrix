@@ -1,0 +1,17 @@
+{
+  "name": "oauth-scope-matrix",
+  "version": "0.0.0",
+  "description": "Map OAuth scopes to operations and identify permissions broader than needed.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/edilec/oauth-scope-matrix"
+  }
+}
