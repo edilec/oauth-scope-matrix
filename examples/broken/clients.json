@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1",
+  "clients": [
+    { "id": "storefront-web", "description": "Public storefront.", "scopes": ["catalog.read", "catalog.read"] },
+    { "id": "analytics", "description": "Reporting job.", "scopes": ["reports.read"] }
+  ]
+}

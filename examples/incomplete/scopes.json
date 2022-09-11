@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1",
+  "scopes": [
+    { "id": "catalog.read", "description": "Read product catalog entries." },
+    { "id": "catalog.write", "description": "Create and update catalog entries.", "implies": ["catalog.read"] }
+  ]
+}

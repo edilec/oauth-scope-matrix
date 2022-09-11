@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1",
+  "operations": [
+    { "id": "list-catalog", "description": "GET /catalog", "requires": ["catalog.read"] },
+    { "id": "update-catalog-item", "description": "PATCH /catalog/{id}", "requires": ["catalog.write"] },
+    { "id": "list-orders", "description": "GET /orders", "requires": ["orders.read"] },
+    { "id": "place-order", "description": "POST /orders", "requires": ["orders.write"] },
+    { "id": "read-profile", "description": "GET /me", "requires": ["profile.read"] }
+  ]
+}
