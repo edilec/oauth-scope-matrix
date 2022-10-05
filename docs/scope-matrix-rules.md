@@ -175,6 +175,27 @@ twenty-seven ordering sites against inputs an English collator orders
 differently; `test/ordering-equivalence.test.mjs` proves the remaining three
 equivalent by enumerating every ordered pair of their real values.
 
+## How the two guards were measured
+
+Both guards are the kind that look like coverage while defending nothing, so
+both were measured by breaking the code and watching the suite.
+
+**Ordering.** Each of the twenty-seven `byCodeUnit` call sites in `src/` was
+swapped, one at a time, to `new Intl.Collator('en').compare`, and the full suite
+was run against each mutant. **24 of 27 were caught.** The three that survive are
+the ones `test/ordering-equivalence.test.mjs` proves equivalent: the known-limits
+list in a configuration error, and the `location.pointer` and `ruleId` components
+of the finding comparator. Their real values collate exactly as they compare by
+code unit, so no output can change and no test could catch them.
+
+**Severity.** Each of the thirty-one error rules was demoted to `warning` by the
+coordinated edit -- the frozen table in `src/index.mjs` *and* the catalog above,
+which is every declaration of severity this package has. **31 of 31 were caught,
+0 survived.** Running the flip in the other direction, promoting each of the
+seven warning rules and the one info rule to `error`, caught all 8. The tests
+that catch them assert exit codes, error counts and printed severity words with
+literal values; none of them reads a table.
+
 ## What the matrix does not establish
 
 See the "Limits and non-goals" section of `README.md`. In short: a pass says the
