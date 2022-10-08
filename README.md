@@ -118,9 +118,16 @@ node bin/oauth-scope-matrix.mjs --root examples/incomplete; echo $?   # 2
 ## Limits and non-goals
 
 **What a pass means.** The three documents are consistent with one another:
-every operation is covered by at least one client, every scope named is one the
-catalog declares, and nothing is granted that this matrix does not need. That is the
-whole claim.
+every operation is covered by at least one client, and every scope named is one
+the catalog declares. That is the whole claim.
+
+A grant this matrix does not need does **not** withhold the pass. `grant-unused`
+and `grant-implied-by-another` are warnings, they are counted in
+`summary.extraGrants`, and a run whose only findings are those still exits 0 —
+deliberately, because a spare grant may be needed by something outside these
+three documents, so the finding asks you to confirm rather than revoke. Read
+`summary.extraGrants` if you want a build that refuses them; the exit code will
+not do it for you.
 
 **What this tool cannot conclude.**
 

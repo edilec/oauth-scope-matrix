@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import test from 'node:test'
 
+import { RULE_SEVERITY } from '../src/index.mjs'
 import {
   cliRun,
   client,
@@ -152,6 +153,55 @@ test('an incomplete run says so on stderr as well, so a human is not left readin
   ), (root) => cliRun(['--root', root, '--json']))
 
   assert.equal(stderr.includes('incomplete: 1 of 1 declared operation(s) were evaluated; this run is not a pass.'), true)
+})
+
+/**
+ * The documented definition of a pass, against the pass the tool actually gives.
+ *
+ * Both `--help` and `README.md` used to define a pass as three conjuncts, the
+ * third being that nothing is granted this matrix does not need -- and that one
+ * is not enforced: `grant-unused` and `grant-implied-by-another` are warnings,
+ * so the run below exits 0 with `extraGrants: 1` while the summary line on
+ * stderr says out loud that a grant here is spare. Two thirds of a sentence
+ * being true is how a reader ends up trusting the third.
+ *
+ * The behavioural half below pins the pass. The textual half fails if either
+ * document goes back to promising more than the exit code delivers.
+ */
+test('a pass does not promise that nothing spare is granted, and both documents say so', async () => {
+  for (const ruleId of ['grant-implied-by-another', 'grant-unused']) {
+    assert.notEqual(RULE_SEVERITY[ruleId], 'error', `${ruleId} decides what the sentence below may claim`)
+  }
+
+  const { code, stdout, stderr } = await withRoot(fixture(
+    [scope('held'), scope('spare')],
+    [client('one', ['held', 'spare'])],
+    [operation('op', ['held'])],
+  ), (root) => cliRun(['--root', root]))
+  const report = JSON.parse(stdout)
+
+  assert.equal(code, 0)
+  assert.equal(report.status, 'pass')
+  assert.equal(report.summary.errors, 0)
+  assert.equal(report.summary.warnings, 1)
+  assert.equal(report.summary.extraGrants, 1, 'a passing run really can carry a grant nothing needs')
+  assert.equal(stderr.includes('1 grant(s) nothing here needs.'), true)
+
+  const help = (await cliRun(['--help'])).stdout
+  const readme = await readFile(join(projectDirectory, 'README.md'), 'utf8')
+  for (const [name, text] of [['--help', help], ['README.md', readme]]) {
+    // Both documents wrap, so the claim is read off the text with its line
+    // breaks collapsed; a sentence that only escapes the check by being folded
+    // across two lines is the same sentence to a reader.
+    const flat = text.replace(/\s+/g, ' ')
+    assert.equal(
+      flat.includes('nothing is granted that this matrix does not need'),
+      false,
+      `${name} claims a pass means no spare grant, and the run above passes with one`,
+    )
+    assert.equal(flat.includes('summary.extraGrants'), true, `${name} must point at the count that does carry this`)
+    assert.equal(flat.includes('withhold the pass'), true, `${name} must say a spare grant does not withhold the pass`)
+  }
 })
 
 test('the report is byte-identical across two runs of the real binary', async () => {

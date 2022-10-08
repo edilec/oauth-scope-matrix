@@ -59,11 +59,14 @@ Output:
 
 What a pass means:
   The three documents agree with one another: every operation is covered by at
-  least one client, every scope named is one the catalog declares, and nothing
-  is granted that this matrix does not need. It is not a statement about the
-  provider. Implication is read from the "implies" lists and from nowhere else,
-  so a pass says the declared model is consistent, never that the declared model
-  matches what the provider actually enforces.
+  least one client and every scope named is one the catalog declares. A grant
+  this matrix does not need does not withhold the pass: it is a warning, it is
+  counted in summary.extraGrants, and a run whose only findings are those still
+  exits 0, because a spare grant may be needed by something outside these three
+  documents. It is not a statement about the provider. Implication is read from
+  the "implies" lists and from nowhere else, so a pass says the declared model
+  is consistent, never that the declared model matches what the provider
+  actually enforces.
 
 Exit codes:
   0  the matrix was compared and nothing contradicted it
