@@ -222,6 +222,42 @@ test('findings are ordered by file first, by the names the caller gave', async (
   assert.notDeepEqual(asCollated.map((finding) => finding.location.file), report.findings.map((finding) => finding.location.file))
 })
 
+/**
+ * The pointer sits between the file and the rule id in the documented sort key,
+ * and nothing pinned that it is there at all.
+ *
+ * Collapsing the chain so that the rule id decides first leaves every existing
+ * ordering case satisfied: they either differ in file, or share a pointer. The
+ * two findings below share a file, sit at different pointers, and their rule ids
+ * run the other way round -- so the emitted sequence says which of the two keys
+ * the report is really ordered by.
+ */
+test('findings sharing a file are ordered by pointer before rule id', async () => {
+  const report = await apiReport(fixture(
+    [scope('zzz.unused'), scope('held', ['ghost'])],
+    [client('one', ['held'])],
+    [operation('op', ['held'])],
+  ))
+
+  assert.deepEqual(
+    report.findings.map((finding) => [finding.location.pointer, finding.ruleId]),
+    [
+      ['/scopes/0', 'scope-unused'],
+      ['/scopes/1/implies/0', 'scope-implication-unknown'],
+    ],
+  )
+  assert.deepEqual(
+    [...new Set(report.findings.map((finding) => finding.location.file))],
+    ['scopes.json'],
+    'both findings must share a file, or the file key would be doing the work',
+  )
+  assert.equal(
+    report.findings[0].ruleId > report.findings[1].ruleId,
+    true,
+    'ordering by rule id would emit these two the other way round, which is what makes this a case',
+  )
+})
+
 test('findings sharing a file, a pointer and a rule are ordered by message, by code unit', async () => {
   const report = await apiReport(fixture(
     [scope('top', ['Z-extra', 'a-extra']), scope('Z-extra'), scope('a-extra')],
