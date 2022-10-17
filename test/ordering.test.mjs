@@ -137,15 +137,29 @@ test('which member of a mutually implying pair of grants is kept is decided by c
 })
 
 test('a tie for the closest client is broken by code unit, not by document order', async () => {
-  const report = await apiReport(fixture(
-    [scope('need-one'), scope('need-two')],
+  // Both clients are missing exactly one scope, so the tie-break decides, and
+  // the answer must not depend on which of them the document declares first.
+  // Declared a-first, the collated answer is the one declared first and the
+  // code-unit answer is the other one. Declared Z-first, the code-unit answer
+  // is the one already held -- which is what makes the second half a case:
+  // a tie-break that lets a later client win on equal ground answers "a-client"
+  // here, and the comparator that would have caught it is never reached.
+  for (const clients of [
     [client('a-client', ['need-one']), client('Z-client', ['need-one'])],
-    [operation('covered-op', ['need-one']), operation('op', ['need-one', 'need-two'])],
-  ))
+    [client('Z-client', ['need-one']), client('a-client', ['need-one'])],
+  ]) {
+    const report = await apiReport(fixture(
+      [scope('need-one'), scope('need-two')],
+      clients,
+      [operation('covered-op', ['need-one']), operation('op', ['need-one', 'need-two'])],
+    ))
 
-  // Both clients are missing exactly one scope, and the one declared first is
-  // the collated answer; the code-unit answer is the other one.
-  assert.equal(findingsFor(report, 'operation-uncovered')[0].evidence, 'closest client "Z-client" is missing: need-two')
+    assert.equal(
+      findingsFor(report, 'operation-uncovered')[0].evidence,
+      'closest client "Z-client" is missing: need-two',
+      `declared ${clients.map((entry) => entry.id).join(' then ')}`,
+    )
+  }
 })
 
 test('the scope lists inside an uncovered finding are ordered by code unit', async () => {
