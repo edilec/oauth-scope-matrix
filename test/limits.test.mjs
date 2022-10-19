@@ -110,6 +110,16 @@ test('maxFindings truncates with a finding that names the limit, never silently'
   const total = inside.findings.length
   assert.equal(total > 3, true, 'this fixture must raise several findings for the case to mean anything')
 
+  // Exactly on the bound: a report that fills the limit is complete, not
+  // truncated. One character wider and this input loses a real finding to a
+  // truncation notice and turns a verdict into an incomplete run.
+  const onTheBound = await apiReport(files, { limits: { maxFindings: total } })
+  assert.equal(findingsFor(onTheBound, 'too-many-findings').length, 0)
+  assert.equal(onTheBound.findings.length, total)
+  assert.deepEqual(onTheBound.findings, inside.findings, 'nothing was dropped and nothing was substituted')
+  assert.equal(onTheBound.status, inside.status)
+  assert.notEqual(onTheBound.status, 'incomplete')
+
   const outside = await apiReport(files, { limits: { maxFindings: 3 } })
   assert.equal(outside.findings.length, 3)
   const finding = findingsFor(outside, 'too-many-findings')[0]
@@ -130,6 +140,16 @@ test('the time budget is enforced through an injected clock, and the run says it
   const frozen = await apiReport(clean(), { clock: () => 0, limits: { maxRuntimeMs: 1 } })
   assert.equal(findingsFor(frozen, 'time-budget-exceeded').length, 0)
   assert.equal(frozen.status, 'pass')
+
+  // Exactly on the bound: a run that has spent its whole budget and no more has
+  // not passed it. One character wider and a matrix with nothing wrong stops
+  // early and reports incomplete instead of pass.
+  let onTheBoundTicks = 0
+  const spent = () => (onTheBoundTicks++ === 0 ? 0 : 5)
+  const onTheBound = await apiReport(clean(), { clock: spent, limits: { maxRuntimeMs: 5 } })
+  assert.equal(onTheBoundTicks > 1, true, 'the budget must really have been consulted after the start')
+  assert.equal(findingsFor(onTheBound, 'time-budget-exceeded').length, 0)
+  assert.equal(onTheBound.status, 'pass')
 })
 
 test('the default clock is a real monotonic source, so the budget is enforced without an injection', async () => {
