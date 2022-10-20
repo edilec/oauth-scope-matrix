@@ -93,6 +93,34 @@ test('a grant no covered operation needs is reported as spare', async () => {
   assert.equal(report.summary.errors, 0, 'a spare grant is worth saying and does not fail the run on its own')
 })
 
+/**
+ * The evidence on a spare grant, in both of its two shapes.
+ *
+ * A client description is what a reader needs to judge whether a grant this
+ * matrix calls spare is needed by something outside it, and a client is not
+ * obliged to have one. Inverting the branch that chooses between them left all
+ * 184 tests green while every described client lost its evidence and every bare
+ * one gained the stub "client:".
+ */
+test('a spare grant carries the client description as evidence, and nothing when there is none', async () => {
+  const scopes = [scope('catalog.read'), scope('billing.write')]
+  const operations = [operation('list-catalog', ['catalog.read'])]
+
+  const described = await apiReport(fixture(
+    scopes,
+    [client('backoffice', ['catalog.read', 'billing.write'], 'Internal desk.')],
+    operations,
+  ))
+  assert.equal(findingsFor(described, 'grant-unused')[0].evidence, 'client: Internal desk.')
+
+  const bare = await apiReport(fixture(scopes, [client('backoffice', ['catalog.read', 'billing.write'])], operations))
+  assert.equal(
+    Object.hasOwn(findingsFor(bare, 'grant-unused')[0], 'evidence'),
+    false,
+    'a client with no description carries no evidence key, not an empty one',
+  )
+})
+
 test('a grant another grant already implies is reported as implied, not as unused', async () => {
   const report = await apiReport(fixture(
     [scope('catalog.read'), scope('catalog.write', ['catalog.read'])],
