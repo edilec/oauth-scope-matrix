@@ -273,6 +273,40 @@ test('the three documents are named by the caller and each name is validated', a
   )
 })
 
+/**
+ * The bounds on a document name, from both sides of each of them.
+ *
+ * A name is checked as configuration, before any evidence is gathered, so
+ * getting it wrong in the refusing direction is a false refusal: a run that
+ * could have reported on a file is instead an empty stdout and a usage error.
+ * Every one of these mutants survived the suite -- refusing a name of exactly
+ * the maximum length, and accepting an empty one, which then resolves to the
+ * root directory itself and is reported as an unreadable input rather than
+ * refused as configuration.
+ */
+test('a document name is bounded on both sides, and neither bound is off by one', async () => {
+  const files = clean()
+  const longest = `${'a'.repeat(195)}.json`
+  assert.equal(longest.length, 200, 'this case rests on the name being exactly the documented maximum')
+
+  const report = await apiReport(files, { scopes: longest })
+  assert.equal(findingsFor(report, 'input-unreadable')[0].location.file, longest)
+  assert.equal(report.status, 'incomplete', 'a name this long is a subject that is missing, not a configuration error')
+
+  await assert.rejects(
+    () => apiReport(files, { scopes: `a${longest}` }),
+    /--scopes must be a relative file name of 1-200 characters/,
+  )
+  await assert.rejects(
+    () => apiReport(files, { scopes: '' }),
+    /--scopes must be a relative file name of 1-200 characters/,
+  )
+  await assert.rejects(
+    () => apiReport(files, { clients: 42 }),
+    /--clients must be a relative file name of 1-200 characters/,
+  )
+})
+
 test('an unknown option throws instead of being ignored', async () => {
   await assert.rejects(() => apiReport(clean(), { scope: 'scopes.json' }), /Unknown option "scope"/)
   await assert.rejects(() => apiReport(clean(), { clock: 'noon' }), /clock must be a function/)
