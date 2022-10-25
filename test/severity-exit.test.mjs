@@ -115,7 +115,12 @@ test('an incomplete run exits 2 and carries a report that is not a pass', async 
 
   assert.equal(code, 2)
   assert.equal(report.status, 'incomplete')
-  assert.notEqual(report.status, 'pass')
+  // Not "and it is not a pass" -- the line above already says which status it
+  // is, so a second assertion about the same string has no failure mode of its
+  // own. What is worth saying here is why this run could not be a pass: the
+  // grant nobody can describe stayed out of what the client is recorded as
+  // holding, so every coverage answer about it is a floor.
+  assert.deepEqual(report.matrix.clients[0].granted, ['held'])
   assert.equal(JSON.parse(stdout).status, 'incomplete', 'stdout is still a report a consumer can parse')
 })
 
