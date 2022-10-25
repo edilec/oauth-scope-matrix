@@ -274,6 +274,42 @@ test('the three documents are named by the caller and each name is validated', a
 })
 
 /**
+ * Which rule reports a `requires` that is not a list, and why the distinction
+ * is worth a test.
+ *
+ * `{"anyOf": [...]}` is a well-formed requirement this build does not evaluate,
+ * and it is reported as unsupported so that the operation is not evaluated
+ * rather than assumed satisfied. Anything else that is not an array is a
+ * malformed operation. The guard that tells those two apart is unpinned: both
+ * inputs below end up incomplete either way, so no verdict changes and only the
+ * rule id -- the part a reader acts on -- is wrong.
+ */
+test('a requires that is not a list is malformed, and only an alternative construct is unsupported', async () => {
+  for (const [label, requires] of [['an object', {}], ['null', null], ['a string', 'held']]) {
+    const report = await apiReport(fixture(
+      [scope('held')],
+      [client('one', ['held'])],
+      [operation('op', ['held']), { id: 'odd', requires }],
+    ))
+    const findings = report.findings.filter((finding) => finding.location.pointer === '/operations/1/requires')
+
+    assert.equal(findings.length, 1, `${label} raises exactly one finding about the list`)
+    assert.equal(findings[0].ruleId, 'operation-invalid', `${label} is malformed, not an unsupported construct`)
+    assert.equal(findings[0].message.includes('must be an array of scope names'), true)
+    assert.equal(report.status, 'incomplete')
+  }
+
+  const unsupported = await apiReport(fixture(
+    [scope('held')],
+    [client('one', ['held'])],
+    [operation('op', ['held']), { id: 'odd', requires: { anyOf: ['held'] } }],
+  ))
+  const finding = unsupported.findings.filter((row) => row.location.pointer === '/operations/1/requires')[0]
+  assert.equal(finding.ruleId, 'requirement-unsupported')
+  assert.equal(finding.message.includes('alternative-requirement construct (anyOf)'), true)
+})
+
+/**
  * The bounds on a document name, from both sides of each of them.
  *
  * A name is checked as configuration, before any evidence is gathered, so

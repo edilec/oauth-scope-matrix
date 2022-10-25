@@ -106,4 +106,11 @@ test('a plain object is told apart from the things that merely look like one', (
   assert.equal(isPlainObject(null), false)
   assert.equal(isPlainObject(new Map()), false)
   assert.equal(isPlainObject('{}'), false)
+  // The two absent values and the primitives answer rather than throw. This is
+  // an exported predicate, and a guard that reaches the prototype lookup with
+  // nothing to look up turns a "no" into an exception at the caller.
+  assert.equal(isPlainObject(undefined), false)
+  assert.equal(isPlainObject(42), false)
+  assert.equal(isPlainObject(true), false)
+  assert.equal(isPlainObject(() => {}), false)
 })
