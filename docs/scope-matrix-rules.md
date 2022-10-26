@@ -188,6 +188,12 @@ list in a configuration error, and the `location.pointer` and `ruleId` component
 of the finding comparator. Their real values collate exactly as they compare by
 code unit, so no output can change and no test could catch them.
 
+Which comparator those two components use is therefore undecidable from the
+output; *where they sit in the sort key* is not, and both places are pinned by
+cases that emit findings whose keys disagree -- two findings in one file at
+different pointers whose rule ids run the other way round, and two at one
+pointer under one rule whose messages do.
+
 **Severity.** Each of the thirty-one error rules was demoted to `warning` by the
 coordinated edit -- the frozen table in `src/index.mjs` *and* the catalog above,
 which is every declaration of severity this package has. **31 of 31 were caught,
