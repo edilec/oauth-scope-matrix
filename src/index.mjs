@@ -29,7 +29,7 @@ import { performance } from 'node:perf_hooks'
 import { compileDocument } from './documents.mjs'
 import { buildImplicationGraph } from './implication.mjs'
 import { buildMatrix } from './matrix.mjs'
-import { byCodeUnit, decodeUtf8, excerpt, hasForbiddenCharacter, isPlainObject } from './text.mjs'
+import { byCodeUnit, decodeUtf8, excerpt, hasForbiddenCharacter, isPlainObject, parseFailureDetail } from './text.mjs'
 
 export const TOOL_ID = 'oauth-scope-matrix'
 export const REPORT_SCHEMA_VERSION = '1'
@@ -372,7 +372,7 @@ async function loadJson(sink, file, real, limits) {
     sink.add({
       file,
       ruleId: 'input-not-json',
-      message: `${file} is not valid JSON: ${error.message}`,
+      message: `${file} is not valid JSON: ${parseFailureDetail(error)}`,
       suggestion: 'Validate the file with a JSON parser before re-running.',
     })
     return null
@@ -621,4 +621,5 @@ export {
 export {
   EXCERPT_LIMIT, MAX_DESCRIPTION_LENGTH, MAX_IDENTIFIER_LENGTH, byCodeUnit, decodeUtf8,
   describeValue, excerpt, hasForbiddenCharacter, isIdentifier, isPlainObject, looksLikePattern,
+  parseFailureDetail,
 } from './text.mjs'

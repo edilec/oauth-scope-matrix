@@ -33,6 +33,15 @@ a one-character typo cannot disable a check — and so no field named `token`,
 `accessToken`, `clientSecret` or anything similar can be read into this tool by
 accident.
 
+That holds on the error path too, which is where it used to fail. A file that
+does not parse never reaches the key check, and `JSON.parse` reports a failure
+either by position or by quoting the input back — `Unexpected token 'A',
+"AKIAIOSFODNN7EXAMPLE" is not valid JSON`, the entire document when the document
+is short and a ten-character prefix when it is not. That quote sits at the front
+of the message, so `excerpt` — which flattens control characters and cuts from
+the end — leaves it intact. The `input-not-json` message carries the failure's
+position, line and column and nothing else.
+
 An `id` is 1–120 characters from `[A-Za-z0-9._:/+_-]`, starting with a letter or
 digit. A `description` is at most 300 characters.
 

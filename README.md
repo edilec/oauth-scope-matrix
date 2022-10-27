@@ -56,6 +56,13 @@ Keys are exhaustive: an unknown key anywhere is refused rather than ignored, so
 a one-character typo cannot turn a real failure green — and no field named
 `token`, `accessToken` or `clientSecret` can be read into this tool by accident.
 
+A file that does not parse at all skips the key check entirely, and that path
+used to reproduce the file. `JSON.parse` reports a failure either by position or
+by quoting the input back — `Unexpected token 'A', "AKIAIOSFODNN7EXAMPLE" is not
+valid JSON`, which is the whole document when the document is short. The
+`input-not-json` message is built from the failure's position, line and column
+alone.
+
 ### Implication is declared, never inferred
 
 `repo:write` does **not** imply `repo:read` because one name is a prefix of the

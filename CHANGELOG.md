@@ -7,6 +7,17 @@ here.
 
 ## [Unreleased]
 
+### Fixed
+
+- `input-not-json` no longer reproduces the document it failed to parse.
+  `JSON.parse` reports a failure either by position or by quoting the input back
+  — `Unexpected token 'A', "AKIAIOSFODNN7EXAMPLE" is not valid JSON`, which is
+  the whole document when the document is short — and that quote sits at the
+  front of the message, where `excerpt` leaves it intact. An exported scope,
+  client or operation file short enough to be only a credential was therefore
+  published in full by the finding that failed to read it. The message is built
+  from the position, line and column alone now.
+
 ### Added
 
 - First implementation of `oauth-scope-matrix`: compares a scope catalog,
