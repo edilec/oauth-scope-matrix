@@ -180,6 +180,9 @@ legitimate file under a symlinked root is not. Control, C1, separator and bidi
 characters are stripped from every untrusted string that reaches output — ids,
 keys, paths, messages and evidence alike. The tool opens files for reading and
 writes nothing at all.
+Its offline test runs the real CLI with URL-shaped descriptions under import
+and socket/API guards. Safe probes show those guards reject imports, a local
+`data:` fetch and a null-receiver connection call; no listener is opened.
 
 ## Development
 
