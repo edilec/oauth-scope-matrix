@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1",
+  "operations": [
+    { "id": "list-catalog", "description": "GET /catalog", "requires": ["catalog.read"] },
+    { "id": "export-catalog", "description": "POST /catalog/exports", "requires": ["reports.export"] }
+  ]
+}

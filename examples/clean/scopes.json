@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1",
+  "scopes": [
+    { "id": "catalog.read", "description": "Read product catalog entries." },
+    { "id": "catalog.write", "description": "Create and update catalog entries.", "implies": ["catalog.read"] },
+    { "id": "orders.read", "description": "Read orders." },
+    { "id": "orders.write", "description": "Place and amend orders.", "implies": ["orders.read"] },
+    { "id": "profile.read", "description": "Read the signed-in customer profile." }
+  ]
+}

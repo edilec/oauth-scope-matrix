@@ -1,0 +1,6 @@
+{
+  "schemaVersion": "1",
+  "clients": [
+    { "id": "storefront-web", "description": "Public storefront.", "scopes": ["catalog.read", "legacy.everything"] }
+  ]
+}

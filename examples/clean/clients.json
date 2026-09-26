@@ -1,0 +1,7 @@
+{
+  "schemaVersion": "1",
+  "clients": [
+    { "id": "storefront-web", "description": "Public storefront.", "scopes": ["catalog.read", "orders.write", "profile.read"] },
+    { "id": "backoffice", "description": "Internal catalog and order desk.", "scopes": ["catalog.write", "orders.write"] }
+  ]
+}
